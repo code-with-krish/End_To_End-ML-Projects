@@ -1,41 +1,40 @@
 # step 8
 
-#  fetch the data from the data base
 import os
 import sys 
 import numpy as np
 import pandas as pd
 import dill
 from sklearn.metrics import r2_score
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 
 from src.exception import CustomException
 
-
-
-# step through ---->7.3 only method
-def save_object(file_path,obj):
+def save_object(file_path, obj):
     try:
         dir_path = os.path.dirname(file_path)
-
         os.makedirs(dir_path, exist_ok=True)
 
         with open(file_path, "wb") as file_obj:
             dill.dump(obj, file_obj)
 
     except Exception as e:
-        raise CustomException(e,sys)
+        raise CustomException(e, sys)
 
-
-# step through ---->9.1 only method
-def evaluate_models(X_train, X_test ,y_train, y_test, models):
+def evaluate_models(X_train, X_test, y_train, y_test, models, params):
     try:
         report = {}
 
         for i in range(len(models)):
+            model_name = list(models.keys())[i]
             model = list(models.values())[i]
+            para = params.get(model_name, {})  # use empty dict if not present
 
-            # train model
+            if para:  # if param grid is not empty
+                gs = GridSearchCV(model, para, cv=3, n_jobs=-1)
+                gs.fit(X_train, y_train)
+                model.set_params(**gs.best_params_)
+
             model.fit(X_train, y_train)
 
             y_train_pred = model.predict(X_train)
@@ -44,14 +43,9 @@ def evaluate_models(X_train, X_test ,y_train, y_test, models):
             train_model_score = r2_score(y_train, y_train_pred)
             test_model_score = r2_score(y_test, y_test_pred)
 
-            report[list(models.keys())[i]] = test_model_score
+            report[model_name] = test_model_score
 
         return report
 
     except Exception as e:
-        raise CustomException(e,sys)
-
-    
-
-    except Exception as e:
-        raise CustomException(e,sys)
+        raise CustomException(e, sys)
