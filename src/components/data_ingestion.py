@@ -10,8 +10,8 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from dataclasses import dataclass # used to create class variable
 
-
-
+from src.components.data_transformation import DataTransformation
+from src.components.data_transformation import DataTransformationConfig
 
 
 
@@ -37,7 +37,9 @@ class DataIngestion:
         logging.info("Entered the data ingestion method or component")
 
         try:
-            df = pd.read_csv('Notebook\data\StudentsPerformance.csv') # it can be api, from UI..anywhere
+            # only 'Notebook\data\StudentsPerformance.csv' this will changed . all this code will same
+            # it can be api, from UI..anywhere
+            df = pd.read_csv(r'Notebook\data\StudentsPerformance.csv') 
 
             logging.info('Read the dataset as dataframe')
 
@@ -68,4 +70,8 @@ class DataIngestion:
 
 if __name__=="__main__":
     obj = DataIngestion()
-    obj.initiate_data_ingestion()
+    train_data , test_data = obj.initiate_data_ingestion()
+
+    # call the function of data transformation
+    data_transformation = DataTransformation()
+    data_transformation.initiate_data_transformation(train_data,test_data)
